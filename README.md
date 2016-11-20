@@ -7,12 +7,12 @@ A lightweight, versatile and straight forward library for asynchronous execution
 Just add this dependency to your build.gradle file:
 
 ```groovy
-compile 'com.github.wrdlbrnft:simple-tasks:0.2.0.3'
+compile 'com.github.wrdlbrnft:simple-tasks:0.2.0.4'
 ```
 
 ## How to use it
 
-The API is designed to be used with lambda expression, so you should use [**Retrolambda**]() or the [**Jack Compiler**]() in your project. If can't or don't want to use either of them you can still use normal anonymous classes to implement each callback. However the following examples rely on lambda expressions:
+The API is designed to be used with lambda expression, so you should use [**Retrolambda**](https://github.com/evant/gradle-retrolambda) or the [**Jack Compiler**](https://developer.android.com/guide/platform/j8-jack.html) in your project. If can't or don't want to use either of them you can still use normal anonymous classes to implement each callback. However the following examples rely on lambda expressions:
 
 ```java
 final TaskRunner runner = new ExecutorTaskRunner(Executors.newCachedThreadPool());
