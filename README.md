@@ -7,7 +7,7 @@ A lightweight, versatile and straight forward library for asynchronous execution
 Just add this dependency to your build.gradle file:
 
 ```groovy
-compile 'com.github.wrdlbrnft:simple-tasks:0.2.0.1'
+compile 'com.github.wrdlbrnft:simple-tasks:0.2.0.3'
 ```
 
 ## How to use it
