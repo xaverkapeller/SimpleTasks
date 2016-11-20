@@ -1,8 +1,8 @@
-package com.github.wrdlbrnft.simplerest.runners;
+package com.github.wrdlbrnft.simpletasks.runners;
 
 import android.os.Handler;
 
-import com.github.wrdlbrnft.simplerest.tasks.Task;
+import com.github.wrdlbrnft.simpletasks.tasks.Task;
 
 /**
  * Created with Android Studio<br>

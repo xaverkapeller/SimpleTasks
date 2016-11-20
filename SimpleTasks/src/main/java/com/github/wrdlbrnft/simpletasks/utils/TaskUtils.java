@@ -1,4 +1,4 @@
-package com.github.wrdlbrnft.simplerest.utils;
+package com.github.wrdlbrnft.simpletasks.utils;
 
 import android.os.Handler;
 import android.os.Looper;

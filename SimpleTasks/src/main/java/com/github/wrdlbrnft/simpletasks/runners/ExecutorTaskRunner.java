@@ -1,6 +1,6 @@
-package com.github.wrdlbrnft.simplerest.runners;
+package com.github.wrdlbrnft.simpletasks.runners;
 
-import com.github.wrdlbrnft.simplerest.tasks.Task;
+import com.github.wrdlbrnft.simpletasks.tasks.Task;
 
 import java.util.concurrent.Executor;
 

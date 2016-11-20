@@ -1,4 +1,4 @@
-package com.github.wrdlbrnft.simplerest.runners;
+package com.github.wrdlbrnft.simpletasks.runners;
 
 /**
  * Created with Android Studio<br>

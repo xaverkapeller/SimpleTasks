@@ -1,15 +1,15 @@
-package com.github.wrdlbrnft.simplerest.runners;
+package com.github.wrdlbrnft.simpletasks.runners;
 
 import android.util.Log;
 
-import com.github.wrdlbrnft.simplerest.exceptions.TaskCanceledException;
-import com.github.wrdlbrnft.simplerest.exceptions.TaskExecutionException;
-import com.github.wrdlbrnft.simplerest.exceptions.TaskTimeoutException;
-import com.github.wrdlbrnft.simplerest.tasks.CancelCallback;
-import com.github.wrdlbrnft.simplerest.tasks.ErrorCallback;
-import com.github.wrdlbrnft.simplerest.tasks.ResultCallback;
-import com.github.wrdlbrnft.simplerest.tasks.Task;
-import com.github.wrdlbrnft.simplerest.utils.TaskUtils;
+import com.github.wrdlbrnft.simpletasks.exceptions.TaskCanceledException;
+import com.github.wrdlbrnft.simpletasks.exceptions.TaskExecutionException;
+import com.github.wrdlbrnft.simpletasks.exceptions.TaskTimeoutException;
+import com.github.wrdlbrnft.simpletasks.tasks.CancelCallback;
+import com.github.wrdlbrnft.simpletasks.tasks.ErrorCallback;
+import com.github.wrdlbrnft.simpletasks.tasks.ResultCallback;
+import com.github.wrdlbrnft.simpletasks.tasks.Task;
+import com.github.wrdlbrnft.simpletasks.utils.TaskUtils;
 
 import java.util.List;
 import java.util.Vector;

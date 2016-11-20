@@ -1,9 +1,9 @@
-package com.github.wrdlbrnft.simplerest.tasks;
+package com.github.wrdlbrnft.simpletasks.tasks;
 
-import com.github.wrdlbrnft.simplerest.exceptions.TaskCanceledException;
-import com.github.wrdlbrnft.simplerest.exceptions.TaskExecutionException;
-import com.github.wrdlbrnft.simplerest.exceptions.TaskTimeoutException;
-import com.github.wrdlbrnft.simplerest.runners.TaskRunner;
+import com.github.wrdlbrnft.simpletasks.exceptions.TaskCanceledException;
+import com.github.wrdlbrnft.simpletasks.exceptions.TaskExecutionException;
+import com.github.wrdlbrnft.simpletasks.exceptions.TaskTimeoutException;
+import com.github.wrdlbrnft.simpletasks.runners.TaskRunner;
 
 /**
  * Created with Android Studio<br>

@@ -1,4 +1,4 @@
-package com.github.wrdlbrnft.simplerest.exceptions;
+package com.github.wrdlbrnft.simpletasks.exceptions;
 
 /**
  * Created with Android Studio<br>
