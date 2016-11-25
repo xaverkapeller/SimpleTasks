@@ -47,7 +47,7 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
         if (isDone()) {
             final TaskResult<T> result = getResult();
             final T value = result.getResult();
-            if (result.getState() == TaskResult.STATE_ERROR) {
+            if (result.getState() == TaskResult.STATE_RESULT) {
                 callback.onResult(value);
             }
         } else {
