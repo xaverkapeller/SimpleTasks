@@ -28,6 +28,8 @@ import java.util.concurrent.TimeoutException;
 
 class TaskImpl<T> extends FutureTask<T> implements Task<T> {
 
+    private final Object mLock = new Object();
+
     private static final String TAG = "TaskImpl";
     private final List<ResultCallback<T>> mResultCallbacks = new Vector<>();
     private final List<ErrorCallback> mErrorCallbacks = new Vector<>();
@@ -44,39 +46,45 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
 
     @Override
     public Task<T> onResult(ResultCallback<T> callback) {
-        if (isDone()) {
-            final TaskResult<T> result = getResult();
-            final T value = result.getResult();
-            if (result.getState() == TaskResult.STATE_RESULT) {
-                callback.onResult(value);
+        synchronized (mLock) {
+            if (isDone()) {
+                final TaskResult<T> result = getResult();
+                final T value = result.getResult();
+                if (result.getState() == TaskResult.STATE_RESULT) {
+                    callback.onResult(value);
+                }
+            } else {
+                mResultCallbacks.add(callback);
             }
-        } else {
-            mResultCallbacks.add(callback);
         }
         return this;
     }
 
     @Override
     public Task<T> onError(ErrorCallback callback) {
-        if (isDone()) {
-            final TaskResult<T> result = getResult();
-            if (result.getState() == TaskResult.STATE_ERROR) {
-                callback.onError(result.getException());
+        synchronized (mLock) {
+            if (isDone()) {
+                final TaskResult<T> result = getResult();
+                if (result.getState() == TaskResult.STATE_ERROR) {
+                    callback.onError(result.getException());
+                }
+            } else {
+                mErrorCallbacks.add(callback);
             }
-        } else {
-            mErrorCallbacks.add(callback);
         }
         return this;
     }
 
     @Override
     public Task<T> onCanceled(CancelCallback callback) {
-        if (isDone()) {
-            if (isCancelled()) {
-                callback.onCanceled();
+        synchronized (mLock) {
+            if (isDone()) {
+                if (isCancelled()) {
+                    callback.onCanceled();
+                }
+            } else {
+                mCancelCallbacks.add(callback);
             }
-        } else {
-            mCancelCallbacks.add(callback);
         }
         return this;
     }
@@ -85,27 +93,29 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
     protected void done() {
         super.done();
 
-        final TaskResult<T> result = getResult();
-        final int state = result.getState();
-        switch (state) {
+        synchronized (mLock) {
+            final TaskResult<T> result = getResult();
+            final int state = result.getState();
+            switch (state) {
 
-            case TaskResult.STATE_RESULT:
-                final T value = result.getResult();
-                notifyResultCallbacks(value);
-                break;
+                case TaskResult.STATE_RESULT:
+                    final T value = result.getResult();
+                    notifyResultCallbacks(value);
+                    break;
 
-            case TaskResult.STATE_TIMEOUT:
-            case TaskResult.STATE_ERROR:
-                final Throwable exception = result.getException();
-                notifyErrorCallbacks(exception);
-                break;
+                case TaskResult.STATE_TIMEOUT:
+                case TaskResult.STATE_ERROR:
+                    final Throwable exception = result.getException();
+                    notifyErrorCallbacks(exception);
+                    break;
 
-            case TaskResult.STATE_CANCELED:
-                notifyCancelCallbacks();
-                break;
+                case TaskResult.STATE_CANCELED:
+                    notifyCancelCallbacks();
+                    break;
 
-            default:
-                throw new IllegalStateException("Unknown result state: " + state);
+                default:
+                    throw new IllegalStateException("Unknown result state: " + state);
+            }
         }
     }
 
