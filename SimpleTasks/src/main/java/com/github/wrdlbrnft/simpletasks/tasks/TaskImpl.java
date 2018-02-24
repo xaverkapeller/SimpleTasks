@@ -1,4 +1,4 @@
-package com.github.wrdlbrnft.simpletasks.runners;
+package com.github.wrdlbrnft.simpletasks.tasks;
 
 import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.LifecycleObserver;
@@ -9,10 +9,6 @@ import android.util.Log;
 import com.github.wrdlbrnft.simpletasks.exceptions.TaskCanceledException;
 import com.github.wrdlbrnft.simpletasks.exceptions.TaskExecutionException;
 import com.github.wrdlbrnft.simpletasks.exceptions.TaskTimeoutException;
-import com.github.wrdlbrnft.simpletasks.tasks.CancelCallback;
-import com.github.wrdlbrnft.simpletasks.tasks.ErrorCallback;
-import com.github.wrdlbrnft.simpletasks.tasks.ResultCallback;
-import com.github.wrdlbrnft.simpletasks.tasks.Task;
 import com.github.wrdlbrnft.simpletasks.utils.TaskUtils;
 
 import java.util.List;
@@ -196,43 +192,40 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
         });
     }
 
+    public interface ResultResolver<T> {
+        T get() throws InterruptedException, ExecutionException, CancellationException, TimeoutException;
+    }
+
+    @NonNull
+    private TaskResult<T> parseResult(ResultResolver<T> resolver) {
+        try {
+            final T result = resolver.get();
+            return new TaskResult<>(TaskResult.STATE_RESULT, result, null);
+        } catch (InterruptedException e) {
+            Log.v(TAG, "Exception while performing task.", e);
+            return new TaskResult<>(TaskResult.STATE_ERROR, null, e);
+        } catch (ExecutionException e) {
+            Log.v(TAG, "Exception while performing task.", e);
+            return new TaskResult<>(TaskResult.STATE_ERROR, null, e.getCause());
+        } catch (CancellationException e) {
+            Log.v(TAG, "Task was canceled.", e);
+            return new TaskResult<>(TaskResult.STATE_CANCELED, null, e.getCause());
+        } catch (TimeoutException e) {
+            Log.v(TAG, "Exception while performing task.", e);
+            return new TaskResult<>(TaskResult.STATE_TIMEOUT, null, e);
+        }
+    }
+
     private synchronized TaskResult<T> getResult() {
         if (mResult == null) {
-            try {
-                final T result = get();
-                mResult = new TaskResult<>(TaskResult.STATE_RESULT, result, null);
-            } catch (InterruptedException e) {
-                Log.v(TAG, "Exception while performing task.", e);
-                mResult = new TaskResult<>(TaskResult.STATE_ERROR, null, e);
-            } catch (ExecutionException e) {
-                Log.v(TAG, "Exception while performing task.", e);
-                mResult = new TaskResult<>(TaskResult.STATE_ERROR, null, e.getCause());
-            } catch (CancellationException e) {
-                Log.v(TAG, "Task was canceled.", e);
-                mResult = new TaskResult<>(TaskResult.STATE_CANCELED, null, e.getCause());
-            }
+            mResult = parseResult(this::get);
         }
         return mResult;
     }
 
     private synchronized TaskResult<T> getResult(long timeout) {
         if (mResult == null) {
-            try {
-                final T result = get(timeout, TimeUnit.MILLISECONDS);
-                mResult = new TaskResult<>(TaskResult.STATE_RESULT, result, null);
-            } catch (InterruptedException e) {
-                Log.v(TAG, "Exception while performing task.", e);
-                mResult = new TaskResult<>(TaskResult.STATE_ERROR, null, e);
-            } catch (ExecutionException e) {
-                Log.v(TAG, "Exception while performing task.", e);
-                mResult = new TaskResult<>(TaskResult.STATE_ERROR, null, e.getCause());
-            } catch (CancellationException e) {
-                Log.v(TAG, "Task was canceled.", e);
-                mResult = new TaskResult<>(TaskResult.STATE_CANCELED, null, e.getCause());
-            } catch (TimeoutException e) {
-                Log.v(TAG, "Exception while performing task.", e);
-                return new TaskResult<>(TaskResult.STATE_TIMEOUT, null, e);
-            }
+            mResult = parseResult(() -> get(timeout, TimeUnit.MILLISECONDS));
         }
         return mResult;
     }
@@ -266,6 +259,11 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
     @Override
     public void cancel() {
         cancel(true);
+    }
+
+    @Override
+    public Runnable asRunnable() {
+        return this;
     }
 
     private static class LifecycleAwareDelegate<D> implements LifecycleObserver {

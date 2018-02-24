@@ -23,11 +23,11 @@ public abstract class BaseTaskRunner implements TaskRunner {
 
     @Override
     public final synchronized <T> Task<T> queue(Callable<T> callable) {
-        final TaskImpl<T> task = new TaskImpl<>(callable);
+        final Task<T> task = Task.from(callable);
         if (mState == STATE_RUNNING) {
-            executeTask(task);
+            executeTask(task.asRunnable());
         } else {
-            mTaskQueue.add(task);
+            mTaskQueue.add(task.asRunnable());
         }
         return task;
     }

@@ -49,7 +49,6 @@ task javadoc(type: Javadoc, dependsOn: 'assembleRelease') {
     classpath += files(android.getBootClasspath())
     exclude '**/BuildConfig.java'
     exclude '**/R.java'
-    failOnError false
 }
 
 afterEvaluate {
