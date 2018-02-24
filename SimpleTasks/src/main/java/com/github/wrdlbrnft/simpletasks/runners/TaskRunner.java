@@ -85,7 +85,7 @@ public interface TaskRunner {
 
     /**
      * Stops the {@link TaskRunner}. Does not cancel currently running {@link Task Tasks}.
-     * New {@link Task Tasks} queued while the {@link TaskRunner} is stopped will not be executed
+     * New {@link Task Tasks} will be queued while the {@link TaskRunner} is stopped will not be executed
      * until the {@link TaskRunner} is started again.
      */
     void stop();

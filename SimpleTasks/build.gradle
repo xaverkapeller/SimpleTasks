@@ -43,8 +43,8 @@ task sourcesJar(type: Jar) {
 task javadoc(type: Javadoc, dependsOn: 'assembleRelease') {
     source = android.sourceSets.main.java.srcDirs
     title = 'SimpleTasks'
-    options.links('http://docs.oracle.com/javase/7/docs/api/');
-    options.linksOffline('http://d.android.com/reference', "${android.sdkDirectory}/docs/reference");
+    options.links('http://docs.oracle.com/javase/7/docs/api/')
+    options.linksOffline('http://d.android.com/reference', "${android.sdkDirectory}/docs/reference")
     classpath += files(android.libraryVariants.javaCompile.classpath.files)
     classpath += files(android.getBootClasspath())
     exclude '**/BuildConfig.java'

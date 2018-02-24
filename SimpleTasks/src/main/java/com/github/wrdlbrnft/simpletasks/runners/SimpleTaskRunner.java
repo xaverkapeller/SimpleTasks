@@ -33,10 +33,11 @@ public class SimpleTaskRunner implements TaskRunner {
     @Override
     public final synchronized <T> Task<T> queue(Callable<T> callable) {
         final Task<T> task = Task.from(callable);
+        final Runnable runnable = task.asRunnable();
         if (mState == STATE_RUNNING) {
-            mRunnableExecutor.run(task.asRunnable());
+            mRunnableExecutor.run(runnable);
         } else {
-            mTaskQueue.add(task.asRunnable());
+            mTaskQueue.add(runnable);
         }
         return task;
     }
