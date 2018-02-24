@@ -11,6 +11,7 @@ import java.util.concurrent.Executor;
  * <p>
  * A {@link TaskRunner} implementation which executes the {@link Task Tasks} on an {@link Executor}.
  */
+@Deprecated
 public class ExecutorTaskRunner extends BaseTaskRunner {
 
     private final Executor mExecutor;

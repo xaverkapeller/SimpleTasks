@@ -11,7 +11,7 @@ import com.github.wrdlbrnft.simpletasks.tasks.Task;
  * <p>
  * A {@link TaskRunner} implementation which executes the {@link Task Tasks} on a {@link Handler}.
  */
-
+@Deprecated
 public class HandlerTaskRunner extends BaseTaskRunner {
 
     private final Handler mHandler;

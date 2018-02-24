@@ -1,5 +1,9 @@
 package com.github.wrdlbrnft.simpletasks.runners;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.github.wrdlbrnft.simpletasks.exceptions.TaskCanceledException;
@@ -28,20 +32,18 @@ import java.util.concurrent.TimeoutException;
 
 class TaskImpl<T> extends FutureTask<T> implements Task<T> {
 
-    private final Object mLock = new Object();
-
     private static final String TAG = "TaskImpl";
+
     private final List<ResultCallback<T>> mResultCallbacks = new Vector<>();
     private final List<ErrorCallback> mErrorCallbacks = new Vector<>();
     private final List<CancelCallback> mCancelCallbacks = new Vector<>();
+
+    private final Object mLock = new Object();
+
     private TaskResult<T> mResult;
 
-    public TaskImpl(Callable<T> callable) {
+    TaskImpl(Callable<T> callable) {
         super(callable);
-    }
-
-    public TaskImpl(Runnable runnable, T result) {
-        super(runnable, result);
     }
 
     @Override
@@ -55,6 +57,24 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
                 }
             } else {
                 mResultCallbacks.add(callback);
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public Task<T> onResult(Lifecycle lifecycle, ResultCallback<T> callback) {
+        synchronized (mLock) {
+            if (isDone()) {
+                final TaskResult<T> result = getResult();
+                final T value = result.getResult();
+                if (result.getState() == TaskResult.STATE_RESULT) {
+                    callback.onResult(value);
+                }
+            } else {
+                final LifecycleAwareResultCallback<T> lifecycleAwareResultCallback = new LifecycleAwareResultCallback<>(callback);
+                mResultCallbacks.add(lifecycleAwareResultCallback);
+                lifecycle.addObserver(lifecycleAwareResultCallback);
             }
         }
         return this;
@@ -76,6 +96,23 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
     }
 
     @Override
+    public Task<T> onError(Lifecycle lifecycle, ErrorCallback callback) {
+        synchronized (mLock) {
+            if (isDone()) {
+                final TaskResult<T> result = getResult();
+                if (result.getState() == TaskResult.STATE_ERROR) {
+                    callback.onError(result.getException());
+                }
+            } else {
+                final LifecycleAwareErrorCallback lifecycleAwareErrorCallback = new LifecycleAwareErrorCallback(callback);
+                lifecycle.addObserver(lifecycleAwareErrorCallback);
+                mErrorCallbacks.add(callback);
+            }
+        }
+        return this;
+    }
+
+    @Override
     public Task<T> onCanceled(CancelCallback callback) {
         synchronized (mLock) {
             if (isDone()) {
@@ -83,6 +120,22 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
                     callback.onCanceled();
                 }
             } else {
+                mCancelCallbacks.add(callback);
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public Task<T> onCanceled(Lifecycle lifecycle, CancelCallback callback) {
+        synchronized (mLock) {
+            if (isDone()) {
+                if (isCancelled()) {
+                    callback.onCanceled();
+                }
+            } else {
+                final LifecycleAwareCancelCallback lifecycleAwareCancelCallback = new LifecycleAwareCancelCallback(callback);
+                lifecycle.addObserver(lifecycleAwareCancelCallback);
                 mCancelCallbacks.add(callback);
             }
         }
@@ -120,34 +173,25 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
     }
 
     private void notifyResultCallbacks(final T value) {
-        TaskUtils.MAIN_HANDLER.post(new Runnable() {
-            @Override
-            public void run() {
-                for (ResultCallback<T> callback : mResultCallbacks) {
-                    callback.onResult(value);
-                }
+        TaskUtils.MAIN_HANDLER.post(() -> {
+            for (ResultCallback<T> callback : mResultCallbacks) {
+                callback.onResult(value);
             }
         });
     }
 
     private void notifyErrorCallbacks(final Throwable exception) {
-        TaskUtils.MAIN_HANDLER.post(new Runnable() {
-            @Override
-            public void run() {
-                for (ErrorCallback callback : mErrorCallbacks) {
-                    callback.onError(exception);
-                }
+        TaskUtils.MAIN_HANDLER.post(() -> {
+            for (ErrorCallback callback : mErrorCallbacks) {
+                callback.onError(exception);
             }
         });
     }
 
     private void notifyCancelCallbacks() {
-        TaskUtils.MAIN_HANDLER.post(new Runnable() {
-            @Override
-            public void run() {
-                for (CancelCallback callback : mCancelCallbacks) {
-                    callback.onCanceled();
-                }
+        TaskUtils.MAIN_HANDLER.post(() -> {
+            for (CancelCallback callback : mCancelCallbacks) {
+                callback.onCanceled();
             }
         });
     }
@@ -222,5 +266,65 @@ class TaskImpl<T> extends FutureTask<T> implements Task<T> {
     @Override
     public void cancel() {
         cancel(true);
+    }
+
+    private static class LifecycleAwareDelegate<D> implements LifecycleObserver {
+
+        public interface Receiver<R> {
+            void onReceive(R receiver);
+        }
+
+        private D mDelegate;
+
+        public LifecycleAwareDelegate(D delegate) {
+            mDelegate = delegate;
+        }
+
+        protected void withDelegate(@NonNull Receiver<D> receiver) {
+            if (mDelegate != null) {
+                receiver.onReceive(mDelegate);
+            }
+        }
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        public void onDestroy() {
+            mDelegate = null;
+        }
+    }
+
+    private static class LifecycleAwareCancelCallback extends LifecycleAwareDelegate<CancelCallback> implements CancelCallback {
+
+        public LifecycleAwareCancelCallback(CancelCallback delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public void onCanceled() {
+            withDelegate(CancelCallback::onCanceled);
+        }
+    }
+
+    private static class LifecycleAwareResultCallback<R> extends LifecycleAwareDelegate<ResultCallback<R>> implements ResultCallback<R> {
+
+        public LifecycleAwareResultCallback(ResultCallback<R> delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public void onResult(R result) {
+            withDelegate(receiver -> receiver.onResult(result));
+        }
+    }
+
+    private static class LifecycleAwareErrorCallback extends LifecycleAwareDelegate<ErrorCallback> implements ErrorCallback {
+
+        public LifecycleAwareErrorCallback(ErrorCallback delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public void onError(Throwable exception) {
+            withDelegate(receiver -> receiver.onError(exception));
+        }
     }
 }

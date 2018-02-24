@@ -9,30 +9,37 @@ import java.util.concurrent.Callable;
 /**
  * Created with Android Studio<br>
  * User: Xaver<br>
- * Date: 19/11/2016<br>
+ * Date: 24/02/2018<br>
  * <p>
  * A {@link TaskRunner} implementation meant to facilitate easy implementation of new
  * {@link TaskRunner TaskRunners.}. Takes care of state and queue management as well as
  * implementation specific threading concerns.
  */
-@Deprecated
-public abstract class BaseTaskRunner implements TaskRunner {
+public class SimpleTaskRunner implements TaskRunner {
+
+    public interface RunnableExecutor {
+        void run(Runnable runnable);
+    }
 
     private final Queue<Runnable> mTaskQueue = new ArrayDeque<>();
-    private int mState = STATE_RUNNING;
+    private final RunnableExecutor mRunnableExecutor;
+
+    private volatile int mState = STATE_RUNNING;
+
+    public SimpleTaskRunner(RunnableExecutor consumer) {
+        mRunnableExecutor = consumer;
+    }
 
     @Override
     public final synchronized <T> Task<T> queue(Callable<T> callable) {
         final TaskImpl<T> task = new TaskImpl<>(callable);
         if (mState == STATE_RUNNING) {
-            executeTask(task);
+            mRunnableExecutor.run(task);
         } else {
             mTaskQueue.add(task);
         }
         return task;
     }
-
-    protected abstract void executeTask(Runnable runnable);
 
     @Override
     public final synchronized int getState() {
@@ -45,7 +52,7 @@ public abstract class BaseTaskRunner implements TaskRunner {
 
         Runnable runnable;
         while ((runnable = mTaskQueue.poll()) != null) {
-            executeTask(runnable);
+            mRunnableExecutor.run(runnable);
         }
     }
 

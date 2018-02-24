@@ -1,8 +1,11 @@
 package com.github.wrdlbrnft.simpletasks.runners;
 
+import android.os.Handler;
+
 import com.github.wrdlbrnft.simpletasks.tasks.Task;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 
 /**
  * Created with Android Studio<br>
@@ -86,4 +89,24 @@ public interface TaskRunner {
      * until the {@link TaskRunner} is started again.
      */
     void stop();
+
+    /**
+     * Creates a {@link TaskRunner} which executes tasks on an Executor.
+     *
+     * @param executor The Executor used to run the tasks.
+     * @return Returns the newly created {@link TaskRunner}.
+     */
+    static TaskRunner runOn(Executor executor) {
+        return new SimpleTaskRunner(executor::execute);
+    }
+
+    /**
+     * Creates a {@link TaskRunner} which executes tasks on an Executor.
+     *
+     * @param handler A {@link Handler} used to run the tasks.
+     * @return Returns the newly created {@link TaskRunner}.
+     */
+    static TaskRunner runOn(Handler handler) {
+        return new SimpleTaskRunner(handler::post);
+    }
 }
