@@ -2,9 +2,6 @@ package com.github.wrdlbrnft.simpletasks.caches;
 
 import android.support.v4.util.ArrayMap;
 
-import com.github.wrdlbrnft.simpletasks.managers.TaskManager;
-import com.github.wrdlbrnft.simpletasks.runners.SimpleTaskRunner;
-
 import java.util.Collections;
 import java.util.Map;
 
@@ -12,6 +9,13 @@ import java.util.Map;
  * Created with Android Studio<br>
  * User: Xaver<br>
  * Date: 24/02/2018
+ * <p>
+ * Basic implementation of the {@link Cache} interface backed by a {@link Map}. This implementation
+ * is thread safe and synchronizes on the {@link Map} on each call to the methods defined in
+ * the {@link Cache} interface.
+ *
+ * @param <K> Type of the keys used to identify values in the {@link Cache}.
+ * @param <T> Type of the values stored in the {@link Cache}.
  */
 public class MapCache<K, T> implements Cache<K, T> {
 

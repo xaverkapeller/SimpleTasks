@@ -7,7 +7,6 @@ import com.github.wrdlbrnft.simpletasks.runners.TaskRunner;
 import com.github.wrdlbrnft.simpletasks.tasks.Task;
 
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * Created with Android Studio<br>
@@ -34,7 +33,7 @@ class TaskManagerImpl<K, T> implements TaskManager<K, T> {
     @Override
     public Task<T> queue(K key) {
         synchronized (mTaskMap) {
-            if(mCache != null) {
+            if (mCache != null) {
                 final T cachedValue = mCache.get(key);
                 if (cachedValue != null) {
                     return Task.withResult(cachedValue);
@@ -80,7 +79,7 @@ class TaskManagerImpl<K, T> implements TaskManager<K, T> {
     @Override
     public void invalidateCache(K id) {
         synchronized (mTaskMap) {
-            if(mCache != null) {
+            if (mCache != null) {
                 mCache.evict(id);
             }
             mTaskMap.remove(id);
@@ -90,7 +89,7 @@ class TaskManagerImpl<K, T> implements TaskManager<K, T> {
     @Override
     public void clearCache() {
         synchronized (mTaskMap) {
-            if(mCache != null) {
+            if (mCache != null) {
                 mCache.clear();
             }
             mTaskMap.clear();
