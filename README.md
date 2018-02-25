@@ -7,15 +7,15 @@ A lightweight, versatile and straight forward library for asynchronous execution
 Just add this dependency to your build.gradle file:
 
 ```groovy
-compile 'com.github.wrdlbrnft:simple-tasks:0.2.0.8'
+compile 'com.github.wrdlbrnft:simple-tasks:0.3.0.13'
 ```
 
 ## How to use it
 
-The API is designed to be used with lambda expression, so you should use [**Retrolambda**](https://github.com/evant/gradle-retrolambda) or the [**Jack Compiler**](https://developer.android.com/guide/platform/j8-jack.html) in your project. If can't or don't want to use either of them you can still use normal anonymous classes to implement each callback. However the following examples rely on lambda expressions:
+The API is designed to be used with lambda expression, so you should use at least build tools version `26.0.0` or above and set your language level to Java 8.
 
 ```java
-final TaskRunner runner = new ExecutorTaskRunner(Executors.newCachedThreadPool());
+final TaskRunner runner = TaskRunner.runOn(Executors.newCachedThreadPool());
 final Task<Result> task = runner.queue(() -> {
     return doSomeWork();
 }).onResult(result -> {
@@ -40,7 +40,7 @@ This will also interrupt the execution of the `Task` if it is currently running.
 If you want to wait for the result of a `Task` synchronously you can use `await()` to do so:
 
 ```java
-final TaskRunner runner = new ExecutorTaskRunner(Executors.newCachedThreadPool());
+final TaskRunner runner = TaskRunner.runOn(Executors.newCachedThreadPool());
 final Task<Result> task = runner.queue(() -> {
     return doSomeWork();
 });
